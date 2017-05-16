@@ -58,30 +58,7 @@ var failures = {
     socketEnded: {}
 };
 
-var Socket = module.exports = function Socket (config, netSocket) {
-    var socket = Object.create(Socket.prototype);
-
-    // Internal implementation values.
-    socket.impl = netSocket || config.socket;
-    // status := ["initialized", "connecting", "starting", "running", "closed"]
-    socket.status = "initialized";
-    socket.startupPromise = new Promise(function (resolve, reject) {
-        socket.resolvePromise = resolve;
-        socket.rejectPromise = reject;
-    });
-
-    // IRC Connection Handshake Options
-    socket.proxy = config.proxy;
-    socket.password = config.password;
-    socket.capabilities = copyJsonMaybe(config.capabilities);
-    socket.username = config.username;
-    socket.realname = config.realname;
-    socket.nicknames = config.nicknames.slice();
-
-    socket.connectOptions = typeof config.connectOptions === "object" ? Object.create(config.connectOptions) : {};
-    socket.connectOptions.port = config.port || 6667;
-    socket.connectOptions.host = config.server;
-
+function configureSocket(socket) {
     // Socket Timeout variables.
     // After five minutes without a server response, send a PONG.
     // If the server doesn't PING back (or send any message really)
@@ -366,6 +343,32 @@ var Socket = module.exports = function Socket (config, netSocket) {
     socket.on("timeout", function () {
         socket.end();
     });
+}
+
+var Socket = module.exports = function Socket (config, netSocketFactory) {
+    var socket = Object.create(Socket.prototype);
+
+    // Internal implementation values.
+    socket.factory = netSocketFactory || config.socketFactory;
+
+    // status := ["initialized", "connecting", "starting", "running", "closed"]
+    socket.status = "initialized";
+    socket.startupPromise = new Promise(function (resolve, reject) {
+        socket.resolvePromise = resolve;
+        socket.rejectPromise = reject;
+    });
+
+    // IRC Connection Handshake Options
+    socket.proxy = config.proxy;
+    socket.password = config.password;
+    socket.capabilities = copyJsonMaybe(config.capabilities);
+    socket.username = config.username;
+    socket.realname = config.realname;
+    socket.nicknames = config.nicknames.slice();
+
+    socket.connectOptions = typeof config.connectOptions === "object" ? Object.create(config.connectOptions) : {};
+    socket.connectOptions.port = config.port || 6667;
+    socket.connectOptions.host = config.server;
 
     return socket;
 };
@@ -379,7 +382,8 @@ Socket.prototype = Object.create(EventEmitter.prototype, intoPropertyDescriptors
         }
 
         this.status = "connecting";
-        this.impl.connect(this.connectOptions);
+        this.impl = this.factory(this.connectOptions);
+        configureSocket(this);
 
         return this.startupPromise;
     },

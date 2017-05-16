@@ -1,4 +1,4 @@
-IRC Socket - Socket wrapper to emit irc messages and handle server startup. 
+IRC Socket - Socket wrapper to emit irc messages and handle server startup.
 
 We provide for you the following benefits:
 
@@ -16,12 +16,11 @@ npm install irc-socket --save
 ## Instantiation ##
 
 ```javascript
-var NetSocket = require("net").Socket;
+var net = require("net");
 var IrcSocket = require("irc-socket");
 
-var netSocket = new Socket();
 var ircSocket = IrcSocket({
-    socket: netSocket,
+    socketFactory: net.connect.bind(net),
 
     port: 6667,
     server: "irc.someircnetwork.net",
@@ -57,28 +56,27 @@ var ircSocket = IrcSocket({
 });
 ```
 
-### IrcSocket(config, socket) ###
+### IrcSocket(config, socketFactory) ###
 
 The IrcSocket constructor is overloaded to provide a convenience form that
-takes the socket separately. This is provided so that if the config is created
+takes the socket factory separately. This is provided so that if the config is created
 apart from the Socket, you don't need to modify the config object, especially
 since the rest of the configuration values can be serialized as JSON.
 
 ```javascript
-var NetSocket = require("net").Socket;
+var net = require("net");
 var IrcSocket = require("irc-socket");
 var fs = require("fs");
 
 var config = fs.readFileSync("config.json");
-var netSocket = new NetSocket();
-var ircSocket = IrcSocket(config, netSocket);
+var ircSocket = IrcSocket(config, net.connect.bind(net));
 ```
 
 ### Configuration
 
 The configuration options are as follows.
 
- - `socket`: [**required**] A net.Socket that IrcSocket wraps around.
+ - `socketFactory`: [**required**] A net.Socket factory that IrcSocket wraps around.
 
  - `server`: [**required**] The server/host to connect to. e.g. "irc.mibbit.net"
 
@@ -152,7 +150,7 @@ client.connect().then(function (res) {
 
 ## Writing to the Server ##
 To send messages to the server, use socket.raw(). It accepts either a
-string or an array of Strings. The message '''must''' follow the 
+string or an array of Strings. The message '''must''' follow the
 [IRC protocol](https://irc-wiki.org/RFC 1459).
 
 ```javascript
@@ -213,7 +211,7 @@ you wish to log them.
 
 ## Timeouts ##
 
-The IRC socket will listen to ping messages and respond to them 
+The IRC socket will listen to ping messages and respond to them
 appropriately, so you do not need to handle this yourself.
 
 Furthermore, if no message from the server is sent within five

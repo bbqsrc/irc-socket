@@ -65,6 +65,12 @@ var messages = {
     cap_not_found_421: ":irc.eu.mibbit.net 421 Havvy2 BLAH :Unknown command\r\n"
 };
 
+function mockFactory(args) {
+    var m = MockSocket(logfn);
+    m.connect(args);
+    return m;
+}
+
 describe("IRC Sockets", function () {
     describe("Status", function () {
         // In this suite, we test the value of 'status' directly.
@@ -76,7 +82,7 @@ describe("IRC Sockets", function () {
         var socket;
 
         beforeEach(function () {
-            socket = IrcSocket(baseConfig, MockSocket(logfn));
+            socket = IrcSocket(baseConfig, mockFactory);
         });
 
         it("is 'initialized' at instantiation", function () {
@@ -130,7 +136,7 @@ describe("IRC Sockets", function () {
 
     describe("Startup Procedure", function () {
         it("Minimal config w/success", function () {
-            var socket = IrcSocket(baseConfig, MockSocket(logfn));
+            var socket = IrcSocket(baseConfig, mockFactory);
             
             var promise = socket.connect()
             .then(function (res) {
@@ -151,7 +157,7 @@ describe("IRC Sockets", function () {
         });
 
         it("Minimal config w/success w/ready event", function (done) {
-            var socket = IrcSocket(baseConfig, MockSocket(logfn));
+            var socket = IrcSocket(baseConfig, mockFactory);
 
             socket.on("ready", function (res) {
                 logfn(inspect(res));
@@ -168,7 +174,7 @@ describe("IRC Sockets", function () {
         });
 
         it("Minimal config w/failure", function () {
-            var socket = IrcSocket(baseConfig, MockSocket(logfn));
+            var socket = IrcSocket(baseConfig, mockFactory);
 
             var promise = socket.connect()
             .then(function (res) {
@@ -187,7 +193,7 @@ describe("IRC Sockets", function () {
 
         it("Multiple nicknames w/success", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 nicknames: ["testbot", "testbot_"]
             });
             var socket = IrcSocket(config);
@@ -210,7 +216,7 @@ describe("IRC Sockets", function () {
 
         it("Multiple nicknames w/failure", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 nicknames: ["testbot", "testbot_"]
             });
             var socket = IrcSocket(config);
@@ -237,7 +243,7 @@ describe("IRC Sockets", function () {
 
         it("WEBIRC w/success", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 // socket.raw(["WEBIRC", proxy.password, proxy.username, proxy.hostname, proxy.ip]);
                 proxy: {
                     password: "pword",
@@ -264,7 +270,7 @@ describe("IRC Sockets", function () {
 
         it("WEBIRC w/failure", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 // socket.raw(["WEBIRC", proxy.password, proxy.username, proxy.hostname, proxy.ip]);
                 proxy: {
                     password: "pword",
@@ -292,7 +298,7 @@ describe("IRC Sockets", function () {
 
         it("Password w/success", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 password: "123456"
             });
             var socket = IrcSocket(config);
@@ -313,7 +319,7 @@ describe("IRC Sockets", function () {
 
         it("Password w/failure", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 password: "123456"
             });
             var socket = IrcSocket(config);
@@ -336,7 +342,7 @@ describe("IRC Sockets", function () {
 
         it("Password w/failure w/Twitch", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 password: "123456"
             });
             var socket = IrcSocket(config);
@@ -359,7 +365,7 @@ describe("IRC Sockets", function () {
 
         it("Capabilities w/command not found", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 capabilities: {
                     requires: ["a"]
                 }
@@ -383,7 +389,7 @@ describe("IRC Sockets", function () {
         // Primarily for Twitch.tv...
         it("Capabilities w/invalid command", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 capabilities: {
                     requires: ["a"]
                 }
@@ -406,7 +412,7 @@ describe("IRC Sockets", function () {
 
         it("Capabilities required w/success", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 capabilities: {
                     requires: ["a"]
                 }
@@ -434,7 +440,7 @@ describe("IRC Sockets", function () {
 
         it("Capabilities required w/failure", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 capabilities: {
                     requires: ["a"]
                 }
@@ -464,7 +470,7 @@ describe("IRC Sockets", function () {
 
         it("Capabilities wanted w/AWK", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 capabilities: {
                     wants: ["a"]
                 }
@@ -492,7 +498,7 @@ describe("IRC Sockets", function () {
 
         it("Capabilities wanted w/NAK", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 capabilities: {
                     wants: ["a"]
                 }
@@ -520,7 +526,7 @@ describe("IRC Sockets", function () {
 
         it("Capabilities wanted (multiple) w/ACK & NAK", function () {
             var config = merge(baseConfig, {
-                socket: MockSocket(logfn),
+                socketFactory: mockFactory,
                 capabilities: {
                     wants: ["a", "b"]
                 }
@@ -555,7 +561,7 @@ describe("IRC Sockets", function () {
                 server: "irc.test.net",
                 realname: "realbot",
                 port: 6667,
-                socket: MockSocket(logfn)
+                socketFactory: mockFactory
             });
 
             var socket = IrcSocket(config);
@@ -576,7 +582,7 @@ describe("IRC Sockets", function () {
 
         it("connectArgs is passed to connect method", function () {
             var config = merge(baseConfig, {});
-            var socket = IrcSocket(config, MockSocket(logfn));
+            var socket = IrcSocket(config, mockFactory);
 
             socket.connect();
             socket.impl.acceptConnect();
@@ -588,7 +594,7 @@ describe("IRC Sockets", function () {
         });
 
         it("Failure by .end() before connect event fired", function () {
-            var socket = IrcSocket(baseConfig, MockSocket(logfn));
+            var socket = IrcSocket(baseConfig, mockFactory);
 
             var promise = socket.connect()
             .then(function (res) {
@@ -606,7 +612,7 @@ describe("IRC Sockets", function () {
         var socket;
 
         beforeEach(function () {
-            socket = IrcSocket(baseConfig, MockSocket(logfn));
+            socket = IrcSocket(baseConfig, mockFactory);
             
             var promise = socket.connect();
             socket.impl.acceptConnect();
@@ -638,7 +644,7 @@ describe("IRC Sockets", function () {
             logfn(format("     Timer  [FAKE]"))
             clock = sinon.useFakeTimers();
 
-            socket = IrcSocket(baseConfig, MockSocket(logfn));
+            socket = IrcSocket(baseConfig, mockFactory);
             
             var promise = socket.connect();
             socket.impl.acceptConnect();
@@ -727,7 +733,7 @@ describe("IRC Sockets", function () {
         var socket;
 
         beforeEach(function () {
-            socket = IrcSocket(baseConfig, MockSocket(logfn));
+            socket = IrcSocket(baseConfig, mockFactory);
             
             var promise = socket.connect();
             socket.impl.acceptConnect();
